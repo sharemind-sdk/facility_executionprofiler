@@ -27,8 +27,12 @@ SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr) {
         if (!logger || !logger->facility)
             return ::SHAREMIND_FACILITY_MODULE_API_0x1_MODULE_ERROR;
 
-        ::LogHard::Backend * const b = static_cast<::LogHard::Backend *>(logger->facility);
-        c->moduleHandle = new sharemind::ExecutionProfiler{*b};
+        ::LogHard::Logger * const b = static_cast<::LogHard::Logger *>(logger->facility);
+        SharemindModuleApi0x1Facility * facility =
+            new SharemindModuleApi0x1Facility{
+                new sharemind::ExecutionProfiler{b->backend()},
+                nullptr};
+        c->moduleHandle = facility;
         return ::SHAREMIND_FACILITY_MODULE_API_0x1_OK;
     } catch (::std::bad_alloc const &) {
         return ::SHAREMIND_FACILITY_MODULE_API_0x1_OUT_OF_MEMORY;
@@ -41,7 +45,10 @@ SHAREMIND_FACILITY_MODULE_API_0x1_DEINITIALIZER(c);
 SHAREMIND_FACILITY_MODULE_API_0x1_DEINITIALIZER(c) {
     assert(c);
     assert(c->moduleHandle);
-    delete static_cast<sharemind::ExecutionProfiler *>(c->moduleHandle);
+    SharemindModuleApi0x1Facility * facility =
+        static_cast<SharemindModuleApi0x1Facility *>(c->moduleHandle);
+    delete static_cast<sharemind::ExecutionProfiler *>(facility->facility);
+    delete facility;
 }
 
 #define STUFF(name,NAME) \
