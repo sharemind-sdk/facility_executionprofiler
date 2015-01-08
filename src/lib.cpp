@@ -1,17 +1,9 @@
 #include <cassert>
-#include <cctype>
 #include <cstring>
-#include <list>
-#include <LogHard/Backend.h>
 #include <LogHard/Logger.h>
-#include <map>
-#include <memory>
-#include <sharemind/compiler-support/GccPR44436.h>
-#include <sharemind/compiler-support/GccPR54526.h>
+#include <new>
 #include <sharemind/ExecutionProfiler.h>
 #include <sharemind/libfmodapi/api_0x1.h>
-#include <string>
-#include <unordered_map>
 
 extern "C" {
 
