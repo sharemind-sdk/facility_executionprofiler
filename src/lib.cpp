@@ -21,6 +21,7 @@
 #include <cstring>
 #include <LogHard/Logger.h>
 #include <new>
+#include <sharemind/compiler-support/GccPR54526.h>
 #include <sharemind/ExecutionProfiler.h>
 #include <sharemind/libfmodapi/api_0x1.h>
 #include <sstream>
@@ -31,6 +32,7 @@ SHAREMIND_FACILITY_MODULE_API_MODULE_INFO("Profiler", 1u, 1u);
 
 SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr);
 SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr) {
+    (void) errorStr;
     assert(c);
     try {
         // Parse configuration
@@ -51,7 +53,8 @@ SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr) {
         if (!logger || !logger->facility)
             return ::SHAREMIND_FACILITY_MODULE_API_0x1_INVALID_CONFIGURATION;
 
-        ::LogHard::Logger * const b = static_cast<::LogHard::Logger *>(logger->facility);
+        ::LogHard::Logger * const b =
+            static_cast<SHAREMIND_GCCPR54526::LogHard::Logger *>(logger->facility);
 
         sharemind::ExecutionProfiler * const profiler =
             new sharemind::ExecutionProfiler{b->backend()};
