@@ -57,7 +57,7 @@ SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr) {
             static_cast<SHAREMIND_GCCPR54526::LogHard::Logger *>(logger->facility);
 
         sharemind::ExecutionProfiler * const profiler =
-            new sharemind::ExecutionProfiler{b->backend()};
+            new sharemind::ExecutionProfiler{*b};
         profiler->startLog(profileFileName);
 
         SharemindModuleApi0x1Facility * facility =
