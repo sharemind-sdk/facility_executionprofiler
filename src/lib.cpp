@@ -40,28 +40,28 @@ SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr) {
          * <nameOfLoggerFacility> <fileNameForProfilingResults>
          */
         // If we want to handle quoted strings, then facility_loghard has a tokenizer
-        std::stringstream configuration(c->conf);
-        std::string loggerFacilityName, profileFileName;
+        ::std::stringstream configuration(c->conf);
+        ::std::string loggerFacilityName, profileFileName;
         configuration >> loggerFacilityName >> profileFileName;
 
         if (loggerFacilityName.empty() || profileFileName.empty())
             return ::SHAREMIND_FACILITY_MODULE_API_0x1_INVALID_CONFIGURATION;
 
-        const SharemindModuleApi0x1Facility * logger =
+        ::SharemindModuleApi0x1Facility const * const flogger =
             c->findModuleFacility(c, loggerFacilityName.c_str());
 
-        if (!logger || !logger->facility)
+        if (!flogger || !flogger->facility)
             return ::SHAREMIND_FACILITY_MODULE_API_0x1_INVALID_CONFIGURATION;
 
-        ::LogHard::Logger * const b =
-            static_cast<SHAREMIND_GCCPR54526::LogHard::Logger *>(logger->facility);
+        ::LogHard::Logger const & logger =
+            *static_cast<SHAREMIND_GCCPR54526::LogHard::Logger *>(flogger->facility);
 
-        sharemind::ExecutionProfiler * const profiler =
-            new sharemind::ExecutionProfiler{*b};
+        ::sharemind::ExecutionProfiler * const profiler =
+            new ::sharemind::ExecutionProfiler{logger};
         profiler->startLog(profileFileName);
 
-        SharemindModuleApi0x1Facility * facility =
-            new SharemindModuleApi0x1Facility{ profiler, nullptr};
+        ::SharemindModuleApi0x1Facility * const facility =
+            new SharemindModuleApi0x1Facility{profiler, nullptr};
         c->moduleHandle = facility;
         return ::SHAREMIND_FACILITY_MODULE_API_0x1_OK;
     } catch (::std::bad_alloc const &) {
@@ -75,13 +75,14 @@ SHAREMIND_FACILITY_MODULE_API_0x1_DEINITIALIZER(c);
 SHAREMIND_FACILITY_MODULE_API_0x1_DEINITIALIZER(c) {
     assert(c);
     assert(c->moduleHandle);
-    SharemindModuleApi0x1Facility * facility =
-        static_cast<SharemindModuleApi0x1Facility *>(c->moduleHandle);
-    delete static_cast<sharemind::ExecutionProfiler *>(facility->facility);
+    ::SharemindModuleApi0x1Facility * const facility =
+        static_cast<SHAREMIND_GCCPR54526::SharemindModuleApi0x1Facility *>(c->moduleHandle);
+    assert(facility->facility);
+    delete static_cast<SHAREMIND_GCCPR54526::sharemind::ExecutionProfiler *>(facility->facility);
     delete facility;
 }
 
-#define STUFF(name,NAME) \
+#define FIND_FACILITY(NAME) \
     SHAREMIND_FACILITY_MODULE_API_0x1_FIND_ ## NAME ## _FACILITY(c, signature);\
     SHAREMIND_FACILITY_MODULE_API_0x1_FIND_ ## NAME ## _FACILITY(c, signature) \
     { \
@@ -89,10 +90,10 @@ SHAREMIND_FACILITY_MODULE_API_0x1_DEINITIALIZER(c) {
         assert(c->moduleHandle); \
         return std::strcmp(signature, "Profiler") != 0 \
                ? nullptr \
-               : static_cast<SharemindModuleApi0x1Facility *>(c->moduleHandle); \
+               : static_cast<SHAREMIND_GCCPR54526::SharemindModuleApi0x1Facility *>(c->moduleHandle); \
     }
-STUFF(module,MODULE)
-STUFF(pd,PD)
-STUFF(pdpi,PDPI)
+FIND_FACILITY(MODULE)
+FIND_FACILITY(PD)
+FIND_FACILITY(PDPI)
 
 } // extern "C" {
