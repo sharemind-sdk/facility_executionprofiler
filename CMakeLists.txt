@@ -82,10 +82,19 @@ FILE(GLOB_RECURSE SHAREMIND_FACILITY_EXECUTIONPROFILER_HEADERS
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 FILE(GLOB_RECURSE SHAREMIND_FACILITY_EXECUTIONPROFILER_SOURCES
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-ADD_LIBRARY("sharemind_facility_executionprofiler" MODULE
-            ${SHAREMIND_FACILITY_EXECUTIONPROFILER_SOURCES}
-            ${SHAREMIND_FACILITY_EXECUTIONPROFILER_HEADERS}
-)
+IF(APPLE)
+    # OS X bundle does not accept VERSION numbers, so build regular .dylib instead
+    # Newer OS X can also dynamically load shared libraries similarly to Linux
+    ADD_LIBRARY("sharemind_facility_executionprofiler" SHARED
+                ${SHAREMIND_FACILITY_EXECUTIONPROFILER_SOURCES}
+                ${SHAREMIND_FACILITY_EXECUTIONPROFILER_HEADERS}
+    )
+ELSE()
+    ADD_LIBRARY("sharemind_facility_executionprofiler" MODULE
+                ${SHAREMIND_FACILITY_EXECUTIONPROFILER_SOURCES}
+                ${SHAREMIND_FACILITY_EXECUTIONPROFILER_HEADERS}
+    )
+ENDIF()
 STRING(REGEX REPLACE "(([^\\.]+\\.[^\\.]+)\\.).*" "\\2"
        SHAREMIND_FACILITY_EXECUTIONPROFILER_SOVERSION "${SHAREMIND_FACILITY_EXECUTIONPROFILER_VERSION}")
 SET_TARGET_PROPERTIES("sharemind_facility_executionprofiler" PROPERTIES
