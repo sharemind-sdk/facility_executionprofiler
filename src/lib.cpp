@@ -54,7 +54,8 @@ SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr) {
             return ::SHAREMIND_FACILITY_MODULE_API_0x1_INVALID_CONFIGURATION;
 
         ::LogHard::Logger const & logger =
-            *static_cast<SHAREMIND_GCCPR54526::LogHard::Logger *>(flogger->facility);
+            *static_cast<SHAREMIND_GCCPR54526_WORKAROUND::LogHard::Logger *>(
+                    flogger->facility);
 
         ::sharemind::ExecutionProfiler * const profiler =
             new ::sharemind::ExecutionProfiler{logger};
@@ -76,9 +77,13 @@ SHAREMIND_FACILITY_MODULE_API_0x1_DEINITIALIZER(c) {
     assert(c);
     assert(c->moduleHandle);
     ::SharemindModuleApi0x1Facility * const facility =
-        static_cast<SHAREMIND_GCCPR54526::SharemindModuleApi0x1Facility *>(c->moduleHandle);
+        static_cast<
+            SHAREMIND_GCCPR54526_WORKAROUND::SharemindModuleApi0x1Facility *>(
+                c->moduleHandle);
     assert(facility->facility);
-    delete static_cast<SHAREMIND_GCCPR54526::sharemind::ExecutionProfiler *>(facility->facility);
+    delete static_cast<
+               SHAREMIND_GCCPR54526_WORKAROUND::sharemind::ExecutionProfiler *>(
+                       facility->facility);
     delete facility;
 }
 
@@ -88,9 +93,10 @@ SHAREMIND_FACILITY_MODULE_API_0x1_DEINITIALIZER(c) {
     { \
         assert(c); \
         assert(c->moduleHandle); \
+        using WORKAROUND_GCCPR54526 = ::SharemindModuleApi0x1Facility; \
         return std::strcmp(signature, "Profiler") != 0 \
                ? nullptr \
-               : static_cast<SHAREMIND_GCCPR54526::SharemindModuleApi0x1Facility *>(c->moduleHandle); \
+               : static_cast<WORKAROUND_GCCPR54526 *>(c->moduleHandle); \
     }
 FIND_FACILITY(MODULE)
 FIND_FACILITY(PD)
