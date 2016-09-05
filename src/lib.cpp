@@ -34,6 +34,10 @@ SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr);
 SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr) {
     (void) errorStr;
     assert(c);
+
+    if (!c->conf)
+        return ::SHAREMIND_FACILITY_MODULE_API_0x1_INVALID_CONFIGURATION;
+
     try {
         // Parse configuration
         /* Configuration string:
