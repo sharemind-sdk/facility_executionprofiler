@@ -17,94 +17,70 @@
 # For further information, please contact us at sharemind@cyber.ee.
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION "2.8.12")
-PROJECT("SHAREMIND_FACILITY_EXECUTIONPROFILER" "CXX")
-SET(SHAREMIND_FACILITY_EXECUTIONPROFILER_VERSION "0.1.0.0")
-SET(SHAREMIND_FACILITY_EXECUTIONPROFILER_COMPAT_VERSION "0.1.0.0")
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+PROJECT(SharemindFacilityExecutionProfiler VERSION 0.1.0 LANGUAGES CXX)
 
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/config.local" OPTIONAL)
 INCLUDE("${CMAKE_CURRENT_BINARY_DIR}/config.local" OPTIONAL)
+
+FIND_PACKAGE(SharemindCMakeHelpers REQUIRED)
+
+SharemindSetProjectVersion()
+
 
 FIND_PACKAGE(LogHard 0.1.0 REQUIRED)
 FIND_PACKAGE(SharemindCxxHeaders REQUIRED)
 FIND_PACKAGE(SharemindLibExecutionProfiler REQUIRED)
 FIND_PACKAGE(SharemindLibFModapi 0.1.0 REQUIRED)
 
-ADD_COMPILE_OPTIONS(
-  "-std=c++11" "-Wall" "-Wextra" "-O2"
-  "$<$<NOT:$<STREQUAL:$<CONFIGURATION>,Release>>:-ggdb>"
-  "$<$<NOT:$<STREQUAL:$<CONFIGURATION>,Release>>:-fno-omit-frame-pointer>"
-  "$<$<STREQUAL:$<CONFIGURATION>,Release>:-DNDEBUG>"
-  "$<$<STREQUAL:$<CONFIGURATION>,Release>:-fomit-frame-pointer>"
-)
 
-INCLUDE(CheckCXXCompilerFlag)
-FUNCTION(CHECK_ADD_COMPILER_FLAG flag)
-    STRING(SUBSTRING "${flag}" 1 -1 FlagName)
-    STRING(REPLACE "+" "X" FlagName "${FlagName}")
-    CHECK_CXX_COMPILER_FLAG("${flag}" C_COMPILER_HAS_${FlagName}_FLAG)
-    IF(C_COMPILER_HAS_${FlagName}_FLAG)
-        ADD_COMPILE_OPTIONS("${flag}")
-    ENDIF()
-ENDFUNCTION()
-CHECK_ADD_COMPILER_FLAG("-Weverything")
-CHECK_ADD_COMPILER_FLAG("-Wlogical-op")
-CHECK_ADD_COMPILER_FLAG("-Wno-covered-switch-default")
-CHECK_ADD_COMPILER_FLAG("-Wno-padded")
-CHECK_ADD_COMPILER_FLAG("-Wno-c++98-compat")
-CHECK_ADD_COMPILER_FLAG("-Wno-c++98-compat-pedantic")
-CHECK_ADD_COMPILER_FLAG("-Wno-gnu-case-range")
-CHECK_ADD_COMPILER_FLAG("-Wno-weak-vtables")
-
-ADD_DEFINITIONS(
-    ${LogHard_DEFINITIONS}
-    ${SharemindCxxHeaders_DEFINITIONS}
-    ${SharemindLibExecutionProfiler_DEFINITIONS}
-    ${SharemindLibFModapi_DEFINITIONS}
-    "-D__STDC_LIMIT_MACROS"
-    "-D_XOPEN_SOURCE=700"
-)
-
-INCLUDE_DIRECTORIES(
-    ${LogHard_INCLUDE_DIRS}
-    ${SharemindCxxHeaders_INCLUDE_DIRS}
-    ${SharemindLibExecutionProfiler_INCLUDE_DIRS}
-    ${SharemindLibFModapi_INCLUDE_DIRS}
-)
-
-
-
-################################################################################
-# libExecutionProgilerFacility
-################################################################################
-
-FILE(GLOB_RECURSE SHAREMIND_FACILITY_EXECUTIONPROFILER_HEADERS
+# The facility:
+SharemindSetCxx11CompileOptions()
+FILE(GLOB_RECURSE SharemindFacilityExecutionProfiler_HEADERS
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
-FILE(GLOB_RECURSE SHAREMIND_FACILITY_EXECUTIONPROFILER_SOURCES
+FILE(GLOB_RECURSE SharemindFacilityExecutionProfiler_SOURCES
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-IF(APPLE)
-    # OS X bundle does not accept VERSION numbers, so build regular .dylib instead
-    # Newer OS X can also dynamically load shared libraries similarly to Linux
-    SET(BUILD_TYPE SHARED)
-ELSE()
-    SET(BUILD_TYPE MODULE)
-ENDIF()
-      
-ADD_LIBRARY("sharemind_facility_executionprofiler" ${BUILD_TYPE}
-            ${SHAREMIND_FACILITY_EXECUTIONPROFILER_SOURCES}
-            ${SHAREMIND_FACILITY_EXECUTIONPROFILER_HEADERS}
+SharemindAddSharedLibrary("sharemind_facility_executionprofiler"
+    MODULE
+    OUTPUT_NAME "sharemind_facility_executionprofiler"
+    SOURCES
+        ${SharemindFacilityExecutionProfiler_SOURCES}
+        ${SharemindFacilityExecutionProfiler_HEADERS}
+    INCLUDE_DIRECTORIES
+        ${LogHard_INCLUDE_DIRS}
+        ${SharemindCxxHeaders_INCLUDE_DIRS}
+        ${SharemindLibExecutionProfiler_INCLUDE_DIRS}
+        ${SharemindLibFModapi_INCLUDE_DIRS}
+    COMPILE_DEFINITIONS
+        "_XOPEN_SOURCE=700"
+    LEGACY_DEFINITIONS
+        ${LogHard_DEFINITIONS}
+        ${SharemindCxxHeaders_DEFINITIONS}
+        ${SharemindLibExecutionProfiler_DEFINITIONS}
+        ${SharemindLibFModapi_DEFINITIONS}
+    LINK_LIBRARIES
+        ${LogHard_LIBRARIES}
+        ${SharemindLibExecutionProfiler_LIBRARIES}
 )
 
-STRING(REGEX REPLACE "(([^\\.]+\\.[^\\.]+)\\.).*" "\\2"
-       SHAREMIND_FACILITY_EXECUTIONPROFILER_SOVERSION "${SHAREMIND_FACILITY_EXECUTIONPROFILER_VERSION}")
-SET_TARGET_PROPERTIES("sharemind_facility_executionprofiler" PROPERTIES
-                      OUTPUT_NAME "sharemind_facility_executionprofiler"
-                      VERSION "${SHAREMIND_FACILITY_EXECUTIONPROFILER_VERSION}"
-                      SOVERSION "${SHAREMIND_FACILITY_EXECUTIONPROFILER_SOVERSION}")
-TARGET_LINK_LIBRARIES("sharemind_facility_executionprofiler"
-    ${LogHard_LIBRARIES}
-    ${SharemindLibExecutionProfiler_LIBRARIES}
-)
 
-INSTALL(TARGETS "sharemind_facility_executionprofiler"
-        LIBRARY DESTINATION "lib")
+# Packaging:
+SharemindSetupPackaging()
+SharemindAddComponentPackage("lib"
+    NAME "libsharemind-facility-executionprofiler"
+    DESCRIPTION "Sharemind Execution Profiler facility"
+    DEB_SECTION "libs"
+    DEB_DEPENDS
+        "libsharemind-executionprofiler (>= 0.1.0)"
+        "libloghard (>= 0.1.0)"
+        "libstdc++6 (>= 4.8.0)"
+        "libc6 (>= 2.19)"
+)
+SharemindAddComponentPackage("debug"
+    NAME "libsharemind-facility-executionprofiler-dbg"
+    DESCRIPTION "Sharemind Execution Profiler facility debug symbols"
+    DEB_SECTION "debug"
+    DEB_DEPENDS
+        "libsharemind-facility-executionprofiler (= ${SharemindFacilityExecutionProfiler_VERSION})"
+)
+SharemindPackagingFinalize()
