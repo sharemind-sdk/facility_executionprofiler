@@ -30,8 +30,8 @@ SharemindSetProjectVersion()
 
 FIND_PACKAGE(LogHard 0.1.0 REQUIRED)
 FIND_PACKAGE(SharemindCxxHeaders REQUIRED)
+FIND_PACKAGE(SharemindFacilityModuleApis REQUIRED)
 FIND_PACKAGE(SharemindLibExecutionProfiler REQUIRED)
-FIND_PACKAGE(SharemindLibFModapi 0.1.0 REQUIRED)
 
 
 # The facility:
@@ -50,14 +50,13 @@ SharemindAddSharedLibrary("sharemind_facility_executionprofiler"
         ${LogHard_INCLUDE_DIRS}
         ${SharemindCxxHeaders_INCLUDE_DIRS}
         ${SharemindLibExecutionProfiler_INCLUDE_DIRS}
-        ${SharemindLibFModapi_INCLUDE_DIRS}
+        ${SharemindFacilityModuleApis_INCLUDE_DIRS}
     COMPILE_DEFINITIONS
         "_XOPEN_SOURCE=700"
     LEGACY_DEFINITIONS
         ${LogHard_DEFINITIONS}
         ${SharemindCxxHeaders_DEFINITIONS}
         ${SharemindLibExecutionProfiler_DEFINITIONS}
-        ${SharemindLibFModapi_DEFINITIONS}
     LINK_LIBRARIES
         ${LogHard_LIBRARIES}
         ${SharemindLibExecutionProfiler_LIBRARIES}
