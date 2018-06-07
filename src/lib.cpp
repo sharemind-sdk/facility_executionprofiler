@@ -21,89 +21,83 @@
 #include <cstring>
 #include <LogHard/Logger.h>
 #include <new>
+#include <sharemind/Concat.h>
+#include <sharemind/Exception.h>
+#include <sharemind/ExceptionMacros.h>
 #include <sharemind/compiler-support/GccPR54526.h>
 #include <sharemind/ExecutionProfiler.h>
-#include <sharemind/facility-module-apis/api_0x1.h>
+#include <sharemind/facility-module-apis/api.h>
+#include <sharemind/facility-module-apis/api_0x2.h>
 #include <sstream>
+
+
+namespace  {
+
+char const facilityName[] = "Profiler";
+
+namespace V2 = sharemind::FacilityModuleApis::v2;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-member-function"
+#endif
+SHAREMIND_DECLARE_EXCEPTION_CONST_MSG_NOINLINE(sharemind::Exception,
+                                               InvalidConfigurationException);
+SHAREMIND_DEFINE_EXCEPTION_CONST_MSG_NOINLINE(
+        sharemind::Exception,,
+        InvalidConfigurationException,
+        "Invalid configuration string given!");
+SHAREMIND_DECLARE_EXCEPTION_CONST_STDSTRING_NOINLINE(
+        sharemind::Exception,
+        MissingLoggerFacilityException);
+SHAREMIND_DEFINE_EXCEPTION_CONST_STDSTRING_NOINLINE(
+        sharemind::Exception,,
+        MissingLoggerFacilityException);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#pragma GCC diagnostic pop
+
+void initializeModule(V2::ModuleInitContext & context) {
+    std::stringstream configuration(context.moduleConfigurationString());
+
+    std::string loggerFacilityName;
+    if (!(configuration >> loggerFacilityName) || loggerFacilityName.empty())
+        throw InvalidConfigurationException();
+
+    std::string profileFileName;
+    if (!(configuration >> profileFileName) || profileFileName.empty())
+        throw InvalidConfigurationException();
+
+    auto const loggerFacilityPtr(
+                context.findFacilityModuleFacility(loggerFacilityName));
+    if (!loggerFacilityPtr)
+        throw MissingLoggerFacilityException(
+                sharemind::concat(
+                    "Missing required facility module facility \"",
+                    loggerFacilityName, "\"!"));
+
+    auto facility(std::make_shared<sharemind::ExecutionProfiler>(
+                      *static_cast<LogHard::Logger const *>(
+                          loggerFacilityPtr.get())));
+    facility->startLog(profileFileName);
+
+    context.registerFacilityModuleFacility(facilityName, facility);
+    context.registerModuleFacility(facilityName, facility);
+    context.registerPdFacility(facilityName, facility);
+    context.registerPdpiFacility(facilityName, facility);
+    context.registerProcessFacility(facilityName, std::move(facility));
+}
+
+} // anonymous namespace
 
 extern "C" {
 
-SHAREMIND_FACILITY_MODULE_API_MODULE_INFO("Profiler", 1u, 1u);
-
-SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr);
-SHAREMIND_FACILITY_MODULE_API_0x1_INITIALIZER(c,errorStr) {
-    (void) errorStr;
-    assert(c);
-
-    if (!c->conf)
-        return ::SHAREMIND_FACILITY_MODULE_API_0x1_INVALID_CONFIGURATION;
-
-    try {
-        // Parse configuration
-        /* Configuration string:
-         * <nameOfLoggerFacility> <fileNameForProfilingResults>
-         */
-        // If we want to handle quoted strings, then facility_loghard has a tokenizer
-        ::std::stringstream configuration(c->conf);
-        ::std::string loggerFacilityName, profileFileName;
-        configuration >> loggerFacilityName >> profileFileName;
-
-        if (loggerFacilityName.empty() || profileFileName.empty())
-            return ::SHAREMIND_FACILITY_MODULE_API_0x1_INVALID_CONFIGURATION;
-
-        ::SharemindModuleApi0x1Facility const * const flogger =
-            c->findModuleFacility(c, loggerFacilityName.c_str());
-
-        if (!flogger || !flogger->facility)
-            return ::SHAREMIND_FACILITY_MODULE_API_0x1_INVALID_CONFIGURATION;
-
-        ::LogHard::Logger const & logger =
-            *static_cast<SHAREMIND_GCCPR54526_WORKAROUND::LogHard::Logger *>(
-                    flogger->facility);
-
-        ::sharemind::ExecutionProfiler * const profiler =
-            new ::sharemind::ExecutionProfiler{logger};
-        profiler->startLog(profileFileName);
-
-        ::SharemindModuleApi0x1Facility * const facility =
-            new SharemindModuleApi0x1Facility{profiler, nullptr};
-        c->moduleHandle = facility;
-        return ::SHAREMIND_FACILITY_MODULE_API_0x1_OK;
-    } catch (::std::bad_alloc const &) {
-        return ::SHAREMIND_FACILITY_MODULE_API_0x1_OUT_OF_MEMORY;
-    } catch (...) {
-        return ::SHAREMIND_FACILITY_MODULE_API_0x1_MODULE_ERROR;
-    }
-}
-
-SHAREMIND_FACILITY_MODULE_API_0x1_DEINITIALIZER(c);
-SHAREMIND_FACILITY_MODULE_API_0x1_DEINITIALIZER(c) {
-    assert(c);
-    assert(c->moduleHandle);
-    ::SharemindModuleApi0x1Facility * const facility =
-        static_cast<
-            SHAREMIND_GCCPR54526_WORKAROUND::SharemindModuleApi0x1Facility *>(
-                c->moduleHandle);
-    assert(facility->facility);
-    delete static_cast<
-               SHAREMIND_GCCPR54526_WORKAROUND::sharemind::ExecutionProfiler *>(
-                       facility->facility);
-    delete facility;
-}
-
-#define FIND_FACILITY(NAME) \
-    SHAREMIND_FACILITY_MODULE_API_0x1_FIND_ ## NAME ## _FACILITY(c, signature);\
-    SHAREMIND_FACILITY_MODULE_API_0x1_FIND_ ## NAME ## _FACILITY(c, signature) \
-    { \
-        assert(c); \
-        assert(c->moduleHandle); \
-        using WORKAROUND_GCCPR54526 = ::SharemindModuleApi0x1Facility; \
-        return std::strcmp(signature, "Profiler") != 0 \
-               ? nullptr \
-               : static_cast<WORKAROUND_GCCPR54526 *>(c->moduleHandle); \
-    }
-FIND_FACILITY(MODULE)
-FIND_FACILITY(PD)
-FIND_FACILITY(PDPI)
+SHAREMIND_FACILITY_MODULE_API_MODULE_INFO("Profiler", 2u, 2u);
+extern V2::FacilityModuleInfo sharemindFacilityModuleInfo_v2;
+V2::FacilityModuleInfo sharemindFacilityModuleInfo_v2{initializeModule};
 
 } // extern "C" {
