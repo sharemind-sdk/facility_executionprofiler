@@ -28,10 +28,10 @@ FIND_PACKAGE(SharemindCMakeHelpers REQUIRED)
 SharemindSetProjectVersion()
 
 
-FIND_PACKAGE(LogHard 0.1.0 REQUIRED)
-FIND_PACKAGE(SharemindCxxHeaders REQUIRED)
-FIND_PACKAGE(SharemindFacilityModuleApis REQUIRED)
-FIND_PACKAGE(SharemindLibExecutionProfiler REQUIRED)
+FIND_PACKAGE(LogHard 0.3.0 REQUIRED)
+FIND_PACKAGE(SharemindCxxHeaders 0.4.0 REQUIRED)
+FIND_PACKAGE(SharemindFacilityModuleApis 1.0.0 REQUIRED)
+FIND_PACKAGE(SharemindLibExecutionProfiler 0.2.0 REQUIRED)
 
 
 # The facility:
@@ -70,8 +70,8 @@ SharemindAddComponentPackage("lib"
     DESCRIPTION "Sharemind Execution Profiler facility"
     DEB_SECTION "libs"
     DEB_DEPENDS
-        "libsharemind-executionprofiler (>= 0.1.0)"
-        "libloghard (>= 0.1.0)"
+        "libsharemind-executionprofiler (>= 0.2.0)"
+        "libloghard (>= 0.3.0)"
         "libstdc++6 (>= 4.8.0)"
         "libc6 (>= 2.19)"
 )
