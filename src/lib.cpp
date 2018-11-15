@@ -24,7 +24,6 @@
 #include <sharemind/Concat.h>
 #include <sharemind/Exception.h>
 #include <sharemind/ExceptionMacros.h>
-#include <sharemind/compiler-support/GccPR54526.h>
 #include <sharemind/ExecutionProfiler.h>
 #include <sharemind/facility-module-apis/api.h>
 #include <sharemind/facility-module-apis/api_0x2.h>
