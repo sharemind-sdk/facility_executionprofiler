@@ -23,13 +23,13 @@ PROJECT(SharemindFacilityExecutionProfiler VERSION 0.2.4 LANGUAGES CXX)
 INCLUDE("${CMAKE_CURRENT_SOURCE_DIR}/config.local" OPTIONAL)
 INCLUDE("${CMAKE_CURRENT_BINARY_DIR}/config.local" OPTIONAL)
 
-FIND_PACKAGE(SharemindCMakeHelpers 1.4 REQUIRED)
+FIND_PACKAGE(SharemindCMakeHelpers 1.6 REQUIRED)
 
 
-FIND_PACKAGE(LogHard 0.3.0 REQUIRED)
-FIND_PACKAGE(SharemindCxxHeaders 0.5.0 REQUIRED)
-FIND_PACKAGE(SharemindFacilityModuleApis 2.0.0 REQUIRED)
-FIND_PACKAGE(SharemindLibExecutionProfiler 0.2.0 REQUIRED)
+FIND_PACKAGE(LogHard 0.5.0 REQUIRED)
+FIND_PACKAGE(SharemindCxxHeaders 0.8.0 REQUIRED)
+FIND_PACKAGE(SharemindFacilityModuleApis 2.1.0 REQUIRED)
+FIND_PACKAGE(SharemindLibExecutionProfiler 0.4.0 REQUIRED)
 
 
 # The facility:
@@ -38,27 +38,22 @@ FILE(GLOB_RECURSE SharemindFacilityExecutionProfiler_HEADERS
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 FILE(GLOB_RECURSE SharemindFacilityExecutionProfiler_SOURCES
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-SharemindAddSharedLibrary("sharemind_facility_executionprofiler"
+SharemindAddSharedLibrary(FacilityExecutionProfiler
     MODULE
     OUTPUT_NAME "sharemind_facility_executionprofiler"
     SOURCES
         ${SharemindFacilityExecutionProfiler_SOURCES}
         ${SharemindFacilityExecutionProfiler_HEADERS}
-    INCLUDE_DIRECTORIES
-        ${LogHard_INCLUDE_DIRS}
-        ${SharemindCxxHeaders_INCLUDE_DIRS}
-        ${SharemindLibExecutionProfiler_INCLUDE_DIRS}
-        ${SharemindFacilityModuleApis_INCLUDE_DIRS}
-    COMPILE_DEFINITIONS
-        "_XOPEN_SOURCE=700"
-    LEGACY_DEFINITIONS
-        ${LogHard_DEFINITIONS}
-        ${SharemindCxxHeaders_DEFINITIONS}
-        ${SharemindLibExecutionProfiler_DEFINITIONS}
-    LINK_LIBRARIES
-        ${LogHard_LIBRARIES}
-        ${SharemindLibExecutionProfiler_LIBRARIES}
 )
+TARGET_COMPILE_DEFINITIONS(FacilityExecutionProfiler
+    PRIVATE "_XOPEN_SOURCE=700")
+TARGET_LINK_LIBRARIES(FacilityExecutionProfiler
+    PRIVATE
+        LogHard::LogHard
+        Sharemind::CxxHeaders
+        Sharemind::FacilityModuleApis
+        Sharemind::LibExecutionProfiler
+    )
 
 # Configuration files:
 INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/packaging/configs/sharemind/"
@@ -73,8 +68,8 @@ SharemindAddComponentPackage("lib"
     DESCRIPTION "Sharemind Execution Profiler facility"
     DEB_SECTION "libs"
     DEB_DEPENDS
-        "libsharemind-executionprofiler (>= 0.2.0)"
-        "libloghard (>= 0.3.0)"
+        "libsharemind-executionprofiler (>= 0.4.0)"
+        "libloghard (>= 0.5.0)"
         "libstdc++6 (>= 4.8.0)"
         "libc6 (>= 2.19)"
     DEB_EXTRA_CONTROL_FILES
