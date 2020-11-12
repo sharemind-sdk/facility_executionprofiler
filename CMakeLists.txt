@@ -33,7 +33,6 @@ FIND_PACKAGE(SharemindLibExecutionProfiler 0.4.0 REQUIRED)
 
 
 # The facility:
-SharemindSetCxx14CompileOptions()
 FILE(GLOB_RECURSE SharemindFacilityExecutionProfiler_HEADERS
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 FILE(GLOB_RECURSE SharemindFacilityExecutionProfiler_SOURCES
