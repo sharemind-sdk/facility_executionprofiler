@@ -27,7 +27,7 @@ FIND_PACKAGE(SharemindCMakeHelpers 1.6 REQUIRED)
 
 
 FIND_PACKAGE(LogHard 0.5.0 REQUIRED)
-FIND_PACKAGE(SharemindCxxHeaders 0.8.0 REQUIRED)
+FIND_PACKAGE(SharemindCxxHeaders 0.9.0 REQUIRED)
 FIND_PACKAGE(SharemindFacilityModuleApis 2.1.0 REQUIRED)
 FIND_PACKAGE(SharemindLibExecutionProfiler 0.4.0 REQUIRED)
 
